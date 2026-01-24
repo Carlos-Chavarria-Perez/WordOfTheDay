@@ -1,7 +1,7 @@
-# WordOfTheDay
-# 🚀 Project Name
 
-A brief, one-sentence description of what this project is and what it aims to solve.
+# WordOfTheDay
+
+The place where all coomers learn more words 
 
 ---
 
