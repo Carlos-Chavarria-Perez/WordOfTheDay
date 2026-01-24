@@ -1,2 +1,2 @@
 # WordOfTheDay
-React Native Game App
+The place where all coomers contirbute to learning more words
