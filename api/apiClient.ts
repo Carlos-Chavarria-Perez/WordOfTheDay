@@ -9,8 +9,14 @@ export const injectTokenGetter = (fn: () => string | null) => {
   getToken = fn;
 };
 
+// ✅ Environment-aware base URL
+const API_BASE_URL =
+  process.env.NODE_ENV === "production"
+    ? "https://wordofthedaybackend.onrender.com"
+    : "http://10.0.2.2:3000";
+
 const apiClient = axios.create({
-  baseURL: "http://10.0.2.2:3000",
+  baseURL: API_BASE_URL,
 });
 
 // attach token
@@ -22,7 +28,7 @@ apiClient.interceptors.request.use((config) => {
   return config;
 });
 
-// handel expired session
+// handle expired session
 apiClient.interceptors.response.use(
   (response) => response,
   (error) => {
@@ -43,7 +49,7 @@ apiClient.interceptors.response.use(
       return new Promise(() => {});
     }
     return Promise.reject(error);
-  },
+  }
 );
 
 export default apiClient;
