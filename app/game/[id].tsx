@@ -80,7 +80,7 @@ export default function Game() {
 
     try {
       setLoading(true);
-      const data = await getGameDetails( id);
+      const data = await getGameDetails(id);
       setDetails(data);
     } catch {
       Alert.alert("Failed to load game");
@@ -106,7 +106,7 @@ export default function Game() {
   };
 
   const loadSentences = async () => {
-    const data = await getSentencesApi( id!);
+    const data = await getSentencesApi(id!);
 
     setSentences(data);
 
@@ -122,7 +122,7 @@ export default function Game() {
   };
 
   const loadLeaderboard = async () => {
-    const data = await getLeaderboardApi( id!);
+    const data = await getLeaderboardApi(id!);
     setScores(data);
   };
 
@@ -160,7 +160,7 @@ export default function Game() {
     try {
       setSubmitting(true);
 
-      await submitSentenceApi( id!, sentence);
+      await submitSentenceApi(id!, sentence);
 
       setSentence("");
       setMyStatus({ approved: null });
@@ -179,7 +179,6 @@ export default function Game() {
   ) => {
     try {
       await reviewSentenceApi(
-
         game_id!,
         sentence_owner_id,
         approved,

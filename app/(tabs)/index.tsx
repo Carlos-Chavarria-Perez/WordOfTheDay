@@ -43,7 +43,7 @@ export default function Home() {
 
     try {
       setCreating(true);
-      const res = await createGame( gameName);
+      const res = await createGame(gameName);
       setModalVisible(false);
       setGameName("");
 
@@ -65,7 +65,7 @@ export default function Home() {
     if (!token || !manualId.trim()) return;
 
     try {
-      const res = await joinGame( manualId.trim());
+      const res = await joinGame(manualId.trim());
 
       router.push({
         pathname: "/game/[id]",

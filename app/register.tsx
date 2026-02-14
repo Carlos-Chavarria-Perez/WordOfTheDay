@@ -54,7 +54,7 @@ export default function Register() {
 
       <Button title="Register" onPress={handleRegister} />
       <View style={styles.redirectContainer}>
-        <Pressable onPress={()=>router.replace("/login")}>
+        <Pressable onPress={() => router.replace("/login")}>
           <Text style={styles.redirectText}>Already registered?</Text>
         </Pressable>
       </View>

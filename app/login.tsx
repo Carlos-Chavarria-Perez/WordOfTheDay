@@ -21,10 +21,11 @@ export default function Login() {
       const res = await loginUser(username, password);
       login(
         {
-        user_id: res.user.user_id,
-        username:res.user.username
-      }, res.token
-    );
+          user_id: res.user.user_id,
+          username: res.user.username,
+        },
+        res.token,
+      );
       Alert.alert("Success", res.message, [
         { text: "OK", onPress: () => router.replace("/(tabs)") },
       ]);
