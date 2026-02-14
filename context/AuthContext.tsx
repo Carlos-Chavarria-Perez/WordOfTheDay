@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useEffect, useState } from "react";
-import { injectTokenGetter } from "@/api/apiClient";
+import { injectTokenGetter } from "@/app/api/apiClient";
 type User = {
   user_id: string;
   username: string;

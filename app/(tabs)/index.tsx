@@ -10,7 +10,7 @@ import {
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
-import { createGame, Game, getGames, joinGame } from "@/api/game";
+import { createGame, Game, getGames, joinGame } from "@/app/api/game";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Modal } from "react-native";
