@@ -11,19 +11,19 @@ import {
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
-import { getGameDetails, getLeaderboardApi } from "../api/game";
+import { getGameDetails, getLeaderboardApi } from "../../api/game";
 import {
   getSentencesApi,
   nextRoundApi,
   reviewSentenceApi,
   submitSentenceApi,
-} from "../api/sentences";
+} from "../../api/sentences";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import FontAwesome from "@expo/vector-icons/FontAwesome";
 import * as Clipboard from "expo-clipboard";
-import { connectSocket, getSocket } from "../api/socket";
+import { connectSocket, getSocket } from "../../api/socket";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
 
 type WordItem = {

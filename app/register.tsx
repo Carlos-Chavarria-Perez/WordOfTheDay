@@ -1,4 +1,4 @@
-import { registerUser } from "@/app/api/Auth";
+import { registerUser } from "@/api/Auth";
 import { useState } from "react";
 import {
   View,
