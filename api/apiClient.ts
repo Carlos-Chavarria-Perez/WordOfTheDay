@@ -9,18 +9,22 @@ export const injectTokenGetter = (fn: () => string | null) => {
   getToken = fn;
 };
 
-// ✅ Environment-aware base URL
-const API_BASE_URL =
-  process.env.NODE_ENV === "production"
-    ? "https://wordofthedaybackend.onrender.com"
-    : "http://10.0.2.2:3000";
+// ✅ Use your Render URL - React Native doesn't have proper NODE_ENV support
+const API_BASE_URL_Prod = "https://wordofthedaybackend.onrender.com";
+const API_BASE_URL_Dev = "http://10.0.2.2:3000";
+
+
+
+console.log("🔵 API Client initialized with URL:", API_BASE_URL_Prod);
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL,
+  baseURL: API_BASE_URL_Prod,
+  timeout: 10000, // 10 second timeout
 });
 
 // attach token
 apiClient.interceptors.request.use((config) => {
+  console.log("🔵 API Request:", config.method?.toUpperCase(), config.url);
   const token = getToken?.();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -30,8 +34,12 @@ apiClient.interceptors.request.use((config) => {
 
 // handle expired session
 apiClient.interceptors.response.use(
-  (response) => response,
+  (response) => {
+    console.log("✅ API Response:", response.status, response.data);
+    return response;
+  },
   (error) => {
+    console.log("❌ API Error:", error.message);
     if (error.response?.status === 401) {
       error.response?.status === 401 &&
         error.response?.data?.error === "Session Expired";
@@ -49,7 +57,7 @@ apiClient.interceptors.response.use(
       return new Promise(() => {});
     }
     return Promise.reject(error);
-  }
+  },
 );
 
 export default apiClient;

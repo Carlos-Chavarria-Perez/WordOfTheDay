@@ -5,9 +5,6 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
-  FlatList,
-  Pressable,
-  TextInput,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -20,11 +17,13 @@ import {
 } from "../../api/sentences";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
-import FontAwesome from "@expo/vector-icons/FontAwesome";
+import { LeaderboardItem } from "@/types/game";
 import * as Clipboard from "expo-clipboard";
 import { connectSocket, getSocket } from "../../api/socket";
-import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import LobbyHeader from "../components/game/LobbyHeader";
+import ScoreBoard from "../components/game/ScoreBoard";
+import ChooserView from "../components/game/ChooserView";
+import PlayerView from "../components/game/PlayerView";
 
 type WordItem = {
   word: string;
@@ -39,10 +38,6 @@ type Sentence = {
   username?: string;
   points?: number;
 };
-type LeaderboardItem = {
-  username: string;
-  points: number;
-};
 
 export default function Game() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -52,6 +47,7 @@ export default function Game() {
   const [loadingWords, setLoadingWords] = useState(false);
 
   const [details, setDetails] = useState<any>(null);
+  const [inviteCode, setInviteCode] = useState<any>(null);
   const [scores, setScores] = useState<LeaderboardItem[]>([]);
 
   const [words, setWords] = useState<WordItem[]>([]);
@@ -131,7 +127,9 @@ export default function Game() {
       setError(null);
       setLoadingWords(true);
 
-      const res = await fetch("http://10.0.2.2:3000/word/random-word");
+      const res = await fetch(
+        "https://wordofthedaybackend.onrender.com/word/random-word",
+      );
       const data: WordItem[] = await res.json();
 
       setWords(data);
@@ -190,9 +188,9 @@ export default function Game() {
   };
 
   const copyIdClipboard = async () => {
-    if (!id) return;
+    if (!details?.invite_code) return;
 
-    await Clipboard.setStringAsync(id);
+    await Clipboard.setStringAsync(details.invite_code);
     Alert.alert("Copied!", "Game ID copied");
   };
 
@@ -310,238 +308,48 @@ export default function Game() {
   ============================= */
 
   return (
-    <SafeAreaView style={{ flex: 1, padding: 15 }}>
-      <View style={styles.gameContainer}>
-        <View style={styles.headerContainer}>
-          <Text style={styles.header}>Game Lobby</Text>
-        </View>
-        <View style={{ marginBottom: 10 }}>
-          <View style={styles.scoreHeader}>
-            <View style={styles.scoreLeft}>
-              <MaterialCommunityIcons name="podium-gold" size={22} />
-              <Text style={styles.scoreTitle}>Player Scoreboard</Text>
-            </View>
+    <SafeAreaView style={styles.safeArea}>
+      {/* Top Section */}
+      <View style={styles.headerSection}>
+        <LobbyHeader
+          game_name={details?.game_name}
+          invite_code={details?.invite_code}
+          onCopy={copyIdClipboard}
+        />
 
-            <Pressable onPress={toggleScores}>
-              <FontAwesome6
-                name={showPlayerScore ? "chevron-down" : "chevron-up"}
-                size={20}
-              />
-            </Pressable>
-          </View>
-
-          {showPlayerScore && (
-            <View>
-              <FlatList
-                data={scores}
-                keyExtractor={(item) => item.username}
-                renderItem={({ item, index }) => (
-                  <View
-                    style={{
-                      flexDirection: "row",
-                      justifyContent: "space-between",
-                    }}
-                  >
-                    <Text>
-                      {index + 1}. {item.username}
-                    </Text>
-                    <Text>{item.points}</Text>
-                  </View>
-                )}
-              />
-            </View>
-          )}
-        </View>
-        <View style={styles.idRow}>
-          <Text>Id:{details?.invite_code}</Text>
-          <Pressable onPress={copyIdClipboard}>
-            <FontAwesome6 name="copy" size={18} />
-          </Pressable>
-        </View>
+        <ScoreBoard scores={scores} />
       </View>
 
-      <View style={styles.Game}>
+      {/* Main Game Section */}
+      <View style={styles.contentSection}>
         {isChooser ? (
-          !selectedWord ? (
-            <>
-              <Text style={styles.sectionTitle}>Select Word</Text>
-
-              {loadingWords ? (
-                <View style={{ padding: 30, alignItems: "center" }}>
-                  <ActivityIndicator size="large" color="#2488ca" />
-                  <Text style={{ marginTop: 10 }}>Fetching words...</Text>
-                </View>
-              ) : (
-                <>
-                  <FlatList
-                    data={words}
-                    keyExtractor={(item) => item.word}
-                    renderItem={({ item }) => (
-                      <Pressable
-                        style={styles.card}
-                        onPress={() => chooseWord(item)}
-                      >
-                        <Text>{item.word}</Text>
-                        <Text>{item.definition}</Text>
-                      </Pressable>
-                    )}
-                    contentContainerStyle={{ paddingBottom: 20 }}
-                  />
-
-                  <Button title="Refresh Words" onPress={requestWords} />
-                </>
-              )}
-            </>
-          ) : (
-            <>
-              <View
-                style={{
-                  justifyContent: "space-between",
-                  flexDirection: "row",
-                }}
-              >
-                <Text style={styles.wordTitle}>
-                  Selected Word: {selectedWord.word}
-                </Text>
-                {isChooser === true && (
-                  <Pressable style={styles.nextRoundBtn} onPress={nextRound}>
-                    <MaterialCommunityIcons
-                      name="skip-next"
-                      size={26}
-                      color="white"
-                    />
-                  </Pressable>
-                )}
-              </View>
-              <Text>{selectedWord.definition}</Text>
-              <Text style={styles.sectionTitle}>Submitted Sentences</Text>
-
-              <FlatList
-                data={sentences}
-                keyExtractor={(item) => item.id}
-                contentContainerStyle={{ paddingBottom: 40 }}
-                renderItem={({ item }) => (
-                  <View style={styles.card}>
-                    <Text>{item.sentence}</Text>
-                    <Text>Submitted by {item.username ?? "Unknown"}</Text>
-
-                    {item.approved === null && (
-                      <View style={styles.actionsRow}>
-                        <TextInput
-                          placeholder="Points"
-                          keyboardType="numeric"
-                          value={pointsMap[item.id] || ""}
-                          onChangeText={(val) =>
-                            setPointsMap((prev) => ({
-                              ...prev,
-                              [item.id]: val,
-                            }))
-                          }
-                          style={styles.pointsInput}
-                        />
-                        <FontAwesome6
-                          name="check-circle"
-                          size={30}
-                          color="green"
-                          onPress={() =>
-                            reviewSentence(
-                              id!,
-                              item.user_id,
-                              true,
-                              Number(pointsMap[item.id] || 0),
-                            )
-                          }
-                        />
-                        <FontAwesome6
-                          name="times-circle"
-                          size={30}
-                          color="red"
-                          onPress={() =>
-                            reviewSentence(id!, item.user_id, false, 0)
-                          }
-                        />
-                      </View>
-                    )}
-                    {item.approved === true && (
-                      <Text style={{ color: "green", marginTop: 6 }}>
-                        Approved
-                      </Text>
-                    )}
-
-                    {item.approved === false && (
-                      <Text style={{ color: "red", marginTop: 6 }}>
-                        Rejected
-                      </Text>
-                    )}
-                  </View>
-                )}
-                ListEmptyComponent={
-                  <Text style={{ textAlign: "center", marginTop: 20 }}>
-                    Waiting for players...
-                  </Text>
-                }
-              />
-            </>
-          )
-        ) : !selectedWord ? (
-          <Text>Waiting for word chooser...</Text>
+          <ChooserView
+            words={words}
+            selectedWord={selectedWord}
+            loadingWords={loadingWords}
+            sentences={sentences}
+            pointsMap={pointsMap}
+            setPointsMap={setPointsMap}
+            chooseWord={chooseWord}
+            reviewSentence={reviewSentence}
+            requestWords={requestWords}
+            nextRound={nextRound}
+            gameId={id!}
+          />
         ) : (
-          <>
-            <Text style={styles.wordTitle}>Word: {selectedWord.word}</Text>
-            <Text style={{ textAlign: "center" }}>
-              {selectedWord.definition}
-            </Text>
-
-            {/* Find the sentence submitted by THIS player */}
-            {!myStatus && (
-              <>
-                <TextInput
-                  placeholder="Type in your sentence"
-                  style={styles.input}
-                  value={sentence}
-                  onChangeText={setSentence}
-                />
-                <Button
-                  title={submitting ? "Submitting..." : "Submit Sentence"}
-                  onPress={submitSentence}
-                  disabled={submitting}
-                />
-              </>
-            )}
-            {myStatus?.approved === null && (
-              <Text style={{ color: "orange", marginTop: 10 }}>
-                Waiting Approval...
-              </Text>
-            )}
-            {myStatus?.approved === true && (
-              <View style={styles.viewApprovedRejected}>
-                <Text style={{ alignSelf: "center", paddingRight: 15 }}>
-                  <FontAwesome6 name="check-circle" size={24} color="green" />
-                </Text>
-
-                <Text style={{ marginTop: 6, fontSize: 16 }}>
-                  Your sentence has bee n approved {`\n`} Points earned:{" "}
-                  {myStatus.points ?? 0}
-                </Text>
-              </View>
-            )}
-
-            {myStatus?.approved === false && (
-              <View style={styles.viewApprovedRejected}>
-                <Text style={{ alignSelf: "center", paddingRight: 15 }}>
-                  <FontAwesome6 name="times-circle" size={24} color="red" />
-                </Text>
-                <Text style={{ marginTop: 6, fontSize: 16 }}>
-                  Your sentence has been rejected {`\n`} Points earned:{" "}
-                  {myStatus.points ?? 0}
-                </Text>
-              </View>
-            )}
-          </>
+          <PlayerView
+            selectedWord={selectedWord}
+            sentence={sentence}
+            setSentence={setSentence}
+            submitSentence={submitSentence}
+            submitting={submitting}
+            myStatus={myStatus}
+          />
         )}
       </View>
 
-      <View style={{ marginTop: "auto", paddingBottom: 10 }}>
+      {/* Bottom Section */}
+      <View style={styles.footer}>
         <Button
           title="Leave Room"
           color="#e2615a"
@@ -557,118 +365,23 @@ export default function Game() {
 ============================= */
 
 const styles = StyleSheet.create({
-  gameContainer: { marginBottom: 10 },
-
-  headerContainer: {
-    alignItems: "center",
-    marginBottom: 20,
-  },
-
-  header: {
-    fontSize: 22,
-    fontWeight: "bold",
-    marginBottom: 10,
-  },
-
-  idRow: {
-    flexDirection: "row",
-    justifyContent: "space-around",
-    marginVertical: 10,
-  },
-
-  sectionTitle: {
-    marginTop: 20,
-    fontWeight: "bold",
-  },
-
-  card: {
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginVertical: 6,
-  },
-
-  viewApprovedRejected: {
-    padding: 12,
-    borderWidth: 1,
-    borderRadius: 8,
-    marginVertical: 6,
-    flexDirection: "row",
-  },
-
-  word: {
-    fontWeight: "bold",
-  },
-
-  wordTitle: {
-    fontSize: 18,
-    fontWeight: "bold",
-    marginTop: 10,
-    textAlign: "center",
-  },
-
-  sentence: {
-    paddingVertical: 6,
-  },
-
-  input: {
-    borderWidth: 1,
-    padding: 10,
-    marginVertical: 10,
-    borderRadius: 6,
-  },
-
-  Game: {
+  safeArea: {
     flex: 1,
-    marginTop: 0,
-  },
-  scoreHeader: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    paddingHorizontal: 12,
-    paddingVertical: 20,
+    paddingHorizontal: 16,
+    paddingTop: 10,
+    backgroundColor: "#f8f9fb",
   },
 
-  scoreLeft: {
-    flexDirection: "row",
-    alignItems: "center",
-    gap: 6,
+  headerSection: {
+    marginBottom: 12,
   },
 
-  scoreTitle: {
-    fontWeight: "600",
-    fontSize: 16,
-  },
-  nextRoundBtn: {
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: "#4CAF50",
-    justifyContent: "center",
-    alignItems: "center",
-
-    elevation: 4, // Android shadow
-    shadowColor: "#000", // iOS shadow
-    shadowOpacity: 0.3,
-    shadowRadius: 4,
-    shadowOffset: { width: 0, height: 2 },
-  },
-  actionsRow: {
-    flexDirection: "row",
-    alignItems: "center", // ⭐ vertical alignment
-    justifyContent: "center",
-    gap: 12, // spacing (RN 0.71+)
-    marginTop: 10,
+  contentSection: {
+    flex: 1,
   },
 
-  pointsInput: {
-    width: 70,
-    height: 40, // ⭐ match icon height visually
-    borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 8,
-    paddingHorizontal: 10,
-    textAlign: "center",
+  footer: {
+    marginTop: "auto",
+    paddingBottom: 10,
   },
 });

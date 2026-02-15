@@ -24,7 +24,7 @@ export default function TabsLayout() {
         }}
       /> */}
 
-      <Tabs.Screen
+      {/* <Tabs.Screen
         name="leaderboard"
         options={{
           title: "Leaderboard",
@@ -32,7 +32,7 @@ export default function TabsLayout() {
             <FontAwesome name="trophy" size={focused ? 28 : 24} color={color} />
           ),
         }}
-      />
+      /> */}
 
       <Tabs.Screen
         name="settings"

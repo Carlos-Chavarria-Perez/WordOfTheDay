@@ -1,6 +1,14 @@
 import { loginUser } from "@/api/Auth";
 import { useState } from "react";
-import { View, Text, TextInput, Button, StyleSheet, Alert } from "react-native";
+import {
+  View,
+  Text,
+  TextInput,
+  Button,
+  StyleSheet,
+  Alert,
+  ActivityIndicator,
+} from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
 import { useAuth } from "@/context/AuthContext";
@@ -8,17 +16,26 @@ import { useAuth } from "@/context/AuthContext";
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
 
   const { login } = useAuth();
 
   const handleLogin = async () => {
+    console.log("🔵 LOGIN BUTTON PRESSED");
+
     if (!username || !password) {
       Alert.alert("Error", "Username and password are required");
       return;
     }
 
+    setLoading(true);
+    console.log("🔵 Attempting login with username:", username);
+
     try {
+      console.log("🔵 Calling loginUser API...");
       const res = await loginUser(username, password);
+      console.log("🔵 Login successful, response:", res);
+
       login(
         {
           user_id: res.user.user_id,
@@ -30,7 +47,14 @@ export default function Login() {
         { text: "OK", onPress: () => router.replace("/(tabs)") },
       ]);
     } catch (error: any) {
-      Alert.alert("Login failed", error.message);
+      console.log("❌ Login error:", error.message);
+      console.log("❌ Full error:", error);
+      console.log("❌ Error response:", error.response?.data);
+      const errorMsg =
+        error.response?.data?.error || error.message || "Unknown error";
+      Alert.alert("Login failed", errorMsg);
+    } finally {
+      setLoading(false);
     }
   };
 
@@ -44,6 +68,7 @@ export default function Login() {
         value={username}
         onChangeText={setUsername}
         autoCapitalize="none"
+        editable={!loading}
       />
 
       <TextInput
@@ -52,9 +77,14 @@ export default function Login() {
         value={password}
         onChangeText={setPassword}
         secureTextEntry
+        editable={!loading}
       />
 
-      <Button title="Login" onPress={handleLogin} />
+      {loading ? (
+        <ActivityIndicator size="large" color="#007AFF" />
+      ) : (
+        <Button title="Login" onPress={handleLogin} />
+      )}
     </SafeAreaView>
   );
 }
