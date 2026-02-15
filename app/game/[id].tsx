@@ -369,7 +369,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 16,
     paddingTop: 10,
-    backgroundColor: "#f8f9fb",
+    backgroundColor: "transparent",
   },
 
   headerSection: {

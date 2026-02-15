@@ -6,7 +6,7 @@ import {
   TextInput,
   StyleSheet,
   FlatList,
-  Pressable
+  Pressable,
 } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useAuth } from "@/context/AuthContext";
@@ -14,6 +14,7 @@ import { createGame, Game, getGames, joinGame } from "@/api/game";
 import { router, useFocusEffect } from "expo-router";
 import { useCallback, useState } from "react";
 import { Modal } from "react-native";
+import { LinearGradient } from "expo-linear-gradient";
 
 export default function Home() {
   const { user, token } = useAuth();
@@ -87,103 +88,110 @@ export default function Home() {
   );
 
   return (
-    <SafeAreaView style={styles.safeArea}>
-      {/* 🔹 Header */}
-      <View style={styles.headerContainer}>
-        <Text style={styles.headerText}>Welcome back, {user?.username}</Text>
-      </View>
+    <LinearGradient
+      colors={["#001b74b9", "#007a43"]}
+      start={{ x: 0, y: 0 }}
+      end={{ x: 1, y: 1 }}
+      style={{ flex: 1 }}
+    >
+      <SafeAreaView style={styles.safeArea}>
+        {/* 🔹 Header */}
+        <View style={styles.headerContainer}>
+          <Text style={styles.headerText}>Welcome back, {user?.username}</Text>
+        </View>
 
-      {/* 🔹 Create Game Section */}
-      <View style={styles.createSection}>
-        <Text style={styles.sectionTitle}>Start the party 🎉</Text>
-        <Pressable
-          style={styles.primaryButton}
-          onPress={() => setModalVisible(true)}
-        >
-          <Text style={styles.primaryButtonText}>Create Room</Text>
-        </Pressable>
-      </View>
+        {/* 🔹 Create Game Section */}
+        <View style={styles.createSection}>
+          <Text style={styles.sectionTitle}>Start the party 🎉</Text>
+          <Pressable
+            style={styles.primaryButton}
+            onPress={() => setModalVisible(true)}
+          >
+            <Text style={styles.primaryButtonText}>Create Room</Text>
+          </Pressable>
+        </View>
 
-      {/* 🔹 Active Games */}
-      <View style={styles.activeGameContainer}>
-        <Text style={styles.sectionTitle}>Your Current Games</Text>
+        {/* 🔹 Active Games */}
+        <View style={styles.activeGameContainer}>
+          <Text style={styles.activeTitle}>Your Current Games</Text>
 
-        <FlatList
-          data={games}
-          keyExtractor={(item) => item.id}
-          renderItem={({ item }) => (
-            <Pressable
-              style={styles.gameItem}
-              onPress={() =>
-                router.push({
-                  pathname: "/game/[id]",
-                  params: { id: item.id },
-                })
-              }
-            >
-              <View style={styles.gameRow}>
-                <Text style={styles.gameName}>{item.game_name}</Text>
-                <Text style={styles.roundBadge}>
-                  Round {item.current_round}
-                </Text>
+          <FlatList
+            data={games}
+            keyExtractor={(item) => item.id}
+            renderItem={({ item }) => (
+              <Pressable
+                style={styles.gameItem}
+                onPress={() =>
+                  router.push({
+                    pathname: "/game/[id]",
+                    params: { id: item.id },
+                  })
+                }
+              >
+                <View style={styles.gameRow}>
+                  <Text style={styles.gameName}>{item.game_name}</Text>
+                  <Text style={styles.roundBadge}>
+                    Round {item.current_round}
+                  </Text>
+                </View>
+              </Pressable>
+            )}
+            ListEmptyComponent={
+              <Text style={styles.emptyText}>No active games yet</Text>
+            }
+          />
+        </View>
+
+        {/* 🔹 Join By Code */}
+        <View style={styles.joinSection}>
+          <TextInput
+            placeholder="Paste game invite code"
+            value={manualId}
+            onChangeText={setManualId}
+            style={styles.input}
+          />
+
+          <Pressable style={styles.secondaryButton} onPress={handleManualJoin}>
+            <Text style={styles.secondaryButtonText}>Join Game</Text>
+          </Pressable>
+        </View>
+
+        {/* 🔹 Create Modal */}
+        <Modal visible={modalVisible} transparent animationType="fade">
+          <View style={styles.modalOverlay}>
+            <View style={styles.modalCard}>
+              <Text style={styles.modalTitle}>Create Room</Text>
+
+              <TextInput
+                placeholder="Enter Room Name"
+                value={gameName}
+                onChangeText={setGameName}
+                style={styles.input}
+              />
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={styles.cancelButton}
+                  onPress={() => setModalVisible(false)}
+                >
+                  <Text style={styles.cancelText}>Cancel</Text>
+                </Pressable>
+
+                <Pressable
+                  style={styles.primaryButton}
+                  onPress={handleCreateGame}
+                  disabled={creating}
+                >
+                  <Text style={styles.primaryButtonText}>
+                    {creating ? "Creating..." : "Create"}
+                  </Text>
+                </Pressable>
               </View>
-            </Pressable>
-          )}
-          ListEmptyComponent={
-            <Text style={styles.emptyText}>No active games yet</Text>
-          }
-        />
-      </View>
-
-      {/* 🔹 Join By Code */}
-      <View style={styles.joinSection}>
-        <TextInput
-          placeholder="Paste game invite code"
-          value={manualId}
-          onChangeText={setManualId}
-          style={styles.input}
-        />
-
-        <Pressable style={styles.secondaryButton} onPress={handleManualJoin}>
-          <Text style={styles.secondaryButtonText}>Join Game</Text>
-        </Pressable>
-      </View>
-
-      {/* 🔹 Create Modal */}
-      <Modal visible={modalVisible} transparent animationType="fade">
-        <View style={styles.modalOverlay}>
-          <View style={styles.modalCard}>
-            <Text style={styles.modalTitle}>Create Room</Text>
-
-            <TextInput
-              placeholder="Enter Room Name"
-              value={gameName}
-              onChangeText={setGameName}
-              style={styles.input}
-            />
-
-            <View style={styles.modalActions}>
-              <Pressable
-                style={styles.cancelButton}
-                onPress={() => setModalVisible(false)}
-              >
-                <Text style={styles.cancelText}>Cancel</Text>
-              </Pressable>
-
-              <Pressable
-                style={styles.primaryButton}
-                onPress={handleCreateGame}
-                disabled={creating}
-              >
-                <Text style={styles.primaryButtonText}>
-                  {creating ? "Creating..." : "Create"}
-                </Text>
-              </Pressable>
             </View>
           </View>
-        </View>
-      </Modal>
-    </SafeAreaView>
+        </Modal>
+      </SafeAreaView>
+    </LinearGradient>
   );
 }
 
@@ -192,6 +200,7 @@ const styles = StyleSheet.create({
     flex: 1,
     paddingHorizontal: 20,
     paddingTop: 10,
+    backgroundColor: "transparent",
   },
 
   headerContainer: {
@@ -199,15 +208,24 @@ const styles = StyleSheet.create({
   },
 
   headerText: {
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "bold",
     textAlign: "center",
+    color: "#ffffff", // 👈 important for gradient
   },
 
   sectionTitle: {
     fontSize: 18,
     fontWeight: "600",
     marginBottom: 10,
+    color: "#ffffff",
+  },
+  activeTitle: {
+    fontSize: 18,
+    fontWeight: "600",
+    marginBottom: 10,
+    color: "#000000",
+    textAlign: "center",
   },
 
   createSection: {
@@ -218,9 +236,9 @@ const styles = StyleSheet.create({
 
   activeGameContainer: {
     flex: 1,
-    padding: 14,
-    borderRadius: 14,
-    backgroundColor: "#ffffff",
+    padding: 16,
+    borderRadius: 18,
+    backgroundColor: "rgba(255, 255, 255, 0.92)",
     borderWidth: 1,
     borderColor: "#e3e6ea",
     marginBottom: 20,
@@ -228,9 +246,9 @@ const styles = StyleSheet.create({
 
   gameItem: {
     padding: 14,
-    borderRadius: 10,
-    backgroundColor: "#f1f4f8",
-    marginBottom: 10,
+    borderRadius: 12,
+    backgroundColor: "#f4f6f8",
+    marginBottom: 12,
   },
 
   gameRow: {
@@ -241,83 +259,88 @@ const styles = StyleSheet.create({
 
   gameName: {
     fontSize: 16,
-    fontWeight: "500",
+    fontWeight: "600",
+    color: "#222",
   },
 
   roundBadge: {
     fontSize: 14,
-    fontWeight: "600",
+    fontWeight: "700",
     color: "#4CAF50",
   },
 
   emptyText: {
     textAlign: "center",
     marginTop: 10,
-    color: "#777",
+    color: "#666",
   },
 
   joinSection: {
     marginBottom: 20,
-    gap: 10,
+    gap: 12,
   },
 
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    borderRadius: 10,
-    padding: 12,
-    backgroundColor: "#fff",
+    borderColor: "#e3e6ea",
+    borderRadius: 14,
+    padding: 14,
+    backgroundColor: "#ffffff",
+    fontSize: 15,
   },
 
   primaryButton: {
     backgroundColor: "#4CAF50",
-    paddingVertical: 12,
+    paddingVertical: 14,
     paddingHorizontal: 20,
-    borderRadius: 10,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   primaryButtonText: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: 16,
   },
 
   secondaryButton: {
     backgroundColor: "#2488ca",
-    paddingVertical: 12,
-    borderRadius: 10,
+    paddingVertical: 14,
+    borderRadius: 14,
     alignItems: "center",
   },
 
   secondaryButtonText: {
     color: "#fff",
     fontWeight: "600",
+    fontSize: 16,
   },
 
   modalOverlay: {
     flex: 1,
-    backgroundColor: "rgba(0,0,0,0.5)",
+    backgroundColor: "rgba(0,0,0,0.55)",
     justifyContent: "center",
     alignItems: "center",
   },
 
   modalCard: {
     width: "85%",
-    backgroundColor: "#fff",
-    padding: 20,
-    borderRadius: 16,
+    backgroundColor: "#ffffff",
+    padding: 22,
+    borderRadius: 20,
   },
 
   modalTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: "bold",
-    marginBottom: 12,
+    marginBottom: 14,
+    color: "#222",
   },
 
   modalActions: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginTop: 16,
+    marginTop: 18,
   },
 
   cancelButton: {
@@ -328,5 +351,6 @@ const styles = StyleSheet.create({
   cancelText: {
     color: "#e2615a",
     fontWeight: "600",
+    fontSize: 15,
   },
 });

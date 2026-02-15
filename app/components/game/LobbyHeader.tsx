@@ -61,6 +61,7 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     marginBottom: 12,
     textAlign: "center",
+    color:"#ffffff"
   },
 
   inviteCard: {

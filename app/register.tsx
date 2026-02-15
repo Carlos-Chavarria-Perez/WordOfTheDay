@@ -4,7 +4,6 @@ import {
   View,
   Text,
   TextInput,
-  Button,
   StyleSheet,
   Alert,
   Pressable,
@@ -28,66 +27,116 @@ export default function Register() {
         { text: "OK", onPress: () => router.replace("/login") },
       ]);
     } catch (error: any) {
-      Alert.alert("Registration failed", error.message);
+      Alert.alert(
+        "Registration failed",
+        error.response?.data?.error || error.message
+      );
     }
   };
 
   return (
-    <SafeAreaView style={styles.container}>
-      <Text style={styles.title}>Create Account</Text>
+    <SafeAreaView style={styles.safeArea}>
+      <View style={styles.card}>
+        <Text style={styles.title}>Create Account</Text>
+        <Text style={styles.subtitle}>Join the party</Text>
 
-      <TextInput
-        placeholder="Username"
-        style={styles.input}
-        value={username}
-        onChangeText={setUsername}
-        autoCapitalize="none"
-      />
+        <TextInput
+          placeholder="Username"
+          placeholderTextColor="#000"
+          style={styles.input}
+          value={username}
+          onChangeText={setUsername}
+          autoCapitalize="none"
+        />
 
-      <TextInput
-        placeholder="Password"
-        style={styles.input}
-        value={password}
-        onChangeText={setPassword}
-        secureTextEntry
-      />
+        <TextInput
+          placeholder="Password"
+          placeholderTextColor="#000"
+          style={styles.input}
+          value={password}
+          onChangeText={setPassword}
+          secureTextEntry
+        />
 
-      <Button title="Register" onPress={handleRegister} />
-      <View style={styles.redirectContainer}>
-        <Pressable onPress={() => router.replace("/login")}>
-          <Text style={styles.redirectText}>Already registered?</Text>
+        <Pressable style={styles.primaryButton} onPress={handleRegister}>
+          <Text style={styles.primaryButtonText}>Register</Text>
         </Pressable>
+
+        <View style={styles.redirectContainer}>
+          <Pressable onPress={() => router.replace("/login")}>
+            <Text style={styles.redirectText}>
+              Already registered? Login
+            </Text>
+          </Pressable>
+        </View>
       </View>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
+  safeArea: {
     flex: 1,
-    padding: 15,
+    backgroundColor: "transparent",
     justifyContent: "center",
+    paddingHorizontal: 20,
   },
+
+  card: {
+    backgroundColor: "#ffffff",
+    padding: 24,
+    borderRadius: 18,
+    shadowColor: "#000",
+    shadowOpacity: 0.08,
+    shadowRadius: 10,
+    elevation: 5,
+  },
+
   title: {
     fontSize: 26,
     fontWeight: "bold",
-    marginBottom: 30,
     textAlign: "center",
+    marginBottom: 6,
+    color: "#222",
   },
+
+  subtitle: {
+    textAlign: "center",
+    marginBottom: 24,
+    color: "#666",
+  },
+
   input: {
     borderWidth: 1,
-    borderColor: "#ccc",
-    padding: 12,
+    borderColor: "#e3e6ea",
+    borderRadius: 12,
+    padding: 14,
+    backgroundColor: "#fff",
     marginBottom: 16,
-    borderRadius: 6,
+    fontSize: 15,
   },
+
+  primaryButton: {
+    backgroundColor: "#4CAF50",
+    paddingVertical: 14,
+    borderRadius: 12,
+    alignItems: "center",
+    marginTop: 6,
+  },
+
+  primaryButtonText: {
+    color: "#fff",
+    fontWeight: "600",
+    fontSize: 16,
+  },
+
   redirectContainer: {
-    padding: 12,
-    justifyContent: "center",
+    marginTop: 18,
+    alignItems: "center",
   },
+
   redirectText: {
-    textAlign: "center",
-    textDecorationLine: "underline",
-    color: "blue",
+    color: "#2488ca",
+    fontWeight: "600",
   },
 });
