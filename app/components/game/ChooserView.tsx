@@ -18,15 +18,13 @@ type Props = {
   loadingWords: boolean;
   sentences: any[];
   pointsMap: Record<string, string>;
-  setPointsMap: React.Dispatch<
-    React.SetStateAction<Record<string, string>>
-  >;
+  setPointsMap: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   chooseWord: (item: any) => void;
   reviewSentence: (
     game_id: string,
     sentence_owner_id: string,
     approved: boolean,
-    points: number
+    points: number,
   ) => void;
   requestWords: () => void;
   nextRound: () => void;
@@ -62,14 +60,9 @@ export default function ChooserView({
               data={words}
               keyExtractor={(item) => item.word}
               renderItem={({ item }) => (
-                <Pressable
-                  style={styles.card}
-                  onPress={() => chooseWord(item)}
-                >
+                <Pressable style={styles.card} onPress={() => chooseWord(item)}>
                   <Text style={styles.wordTitle}>{item.word}</Text>
-                  <Text style={styles.definition}>
-                    {item.definition}
-                  </Text>
+                  <Text style={styles.definition}>{item.definition}</Text>
                 </Pressable>
               )}
             />
@@ -80,24 +73,35 @@ export default function ChooserView({
       </>
     );
   }
+  if (selectedWord && sentences.length === 0) {
+    return (
+      <>
+        <View style={styles.waitingHeader}>
+          <Text style={styles.sectionTitle}>
+            Selected Word: {selectedWord.word}
+          </Text>
+        </View>
+
+        <View style={styles.card}>
+          <ActivityIndicator size="large" />
+          <Text style={styles.waitingText}>
+            Waiting for players to submit...
+          </Text>
+        </View>
+      </>
+    );
+  }
 
   // 🔵 REVIEW STATE
   return (
     <>
       <View style={styles.wordHeader}>
-        <Text style={styles.wordTitle}>
+        <Text style={styles.sectionTitle}>
           Selected Word: {selectedWord.word}
         </Text>
 
-        <Pressable
-          style={styles.nextRoundBtn}
-          onPress={nextRound}
-        >
-          <MaterialCommunityIcons
-            name="skip-next"
-            size={26}
-            color="#fff"
-          />
+        <Pressable style={styles.nextRoundBtn} onPress={nextRound}>
+          <MaterialCommunityIcons name="skip-next" size={26} color="#fff" />
         </Pressable>
       </View>
 
@@ -106,13 +110,22 @@ export default function ChooserView({
         keyExtractor={(item) => item.id}
         renderItem={({ item }) => (
           <View style={styles.card}>
-            <Text>{item.sentence}</Text>
+            <View style={styles.submitterContainer}>
+              <Text style={{ fontSize: 18 }}>Submitted by: </Text>
+              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                {item.username}
+              </Text>
+            </View>
+            <View style={styles.sentenceContainer}>
+              <Text style={{textAlign:"center", fontSize:20}}>{item.sentence}</Text>
+            </View>
 
             {item.approved === null && (
               <View style={styles.actionsRow}>
                 <TextInput
                   style={styles.pointsInput}
                   placeholder="Pts"
+                  placeholderTextColor="#000"
                   keyboardType="numeric"
                   value={pointsMap[item.id] || ""}
                   onChangeText={(val) =>
@@ -132,7 +145,7 @@ export default function ChooserView({
                       gameId,
                       item.user_id,
                       true,
-                      Number(pointsMap[item.id] || 0)
+                      Number(pointsMap[item.id] || 0),
                     )
                   }
                 />
@@ -141,28 +154,17 @@ export default function ChooserView({
                   name="times-circle"
                   size={26}
                   color="red"
-                  onPress={() =>
-                    reviewSentence(
-                      gameId,
-                      item.user_id,
-                      false,
-                      0
-                    )
-                  }
+                  onPress={() => reviewSentence(gameId, item.user_id, false, 0)}
                 />
               </View>
             )}
 
             {item.approved === true && (
-              <Text style={styles.approvedText}>
-                Approved
-              </Text>
+              <Text style={styles.approvedText}>Approved</Text>
             )}
 
             {item.approved === false && (
-              <Text style={styles.rejectedText}>
-                Rejected
-              </Text>
+              <Text style={styles.rejectedText}>Rejected</Text>
             )}
           </View>
         )}
@@ -177,12 +179,18 @@ const styles = StyleSheet.create({
     fontWeight: "bold",
     fontSize: 18,
     textAlign: "center",
-    color:"#ffffff"
+    color: "#ffffff",
   },
 
   wordHeader: {
     flexDirection: "row",
     justifyContent: "space-between",
+    alignItems: "center",
+    marginVertical: 12,
+  },
+  waitingHeader: {
+    flexDirection: "row",
+    justifyContent: "center",
     alignItems: "center",
     marginVertical: 12,
   },
@@ -218,7 +226,7 @@ const styles = StyleSheet.create({
     width: 70,
     height: 40,
     borderWidth: 1,
-    borderColor: "#ccc",
+    borderColor: "#000000",
     borderRadius: 8,
     paddingHorizontal: 10,
     textAlign: "center",
@@ -228,12 +236,16 @@ const styles = StyleSheet.create({
     color: "green",
     marginTop: 6,
     fontWeight: "600",
+    textAlign:"center",
+    fontSize:20
   },
-
+  
   rejectedText: {
     color: "red",
     marginTop: 6,
     fontWeight: "600",
+    textAlign:"center",
+    fontSize:20
   },
 
   nextRoundBtn: {
@@ -254,5 +266,22 @@ const styles = StyleSheet.create({
   loadingContainer: {
     padding: 30,
     alignItems: "center",
+  },
+  waitingContainer: {
+    marginTop: 40,
+    alignItems: "center",
+  },
+  submitterContainer: { flexDirection: "row", textAlign: "center" },
+  sentenceContainer:{
+    padding:10,
+    
+  },
+
+  waitingText: {
+    marginTop: 12,
+    fontSize: 16,
+    fontWeight: "500",
+    textAlign: "center",
+    color: "#000",
   },
 });

@@ -36,7 +36,7 @@ export default function Login() {
           user_id: res.user.user_id,
           username: res.user.username,
         },
-        res.token
+        res.token,
       );
 
       Alert.alert("Success", res.message, [
@@ -84,6 +84,9 @@ export default function Login() {
             <Text style={styles.primaryButtonText}>Login</Text>
           </Pressable>
         )}
+        <Pressable onPress={() => router.replace("/login")}>
+          <Text style={styles.redirectText}>Dont' have an account? Register</Text>
+        </Pressable>
       </View>
     </SafeAreaView>
   );
@@ -129,6 +132,7 @@ const styles = StyleSheet.create({
     backgroundColor: "#fff",
     marginBottom: 16,
     fontSize: 15,
+    color: "#000",
   },
 
   primaryButton: {
@@ -143,5 +147,11 @@ const styles = StyleSheet.create({
     color: "#fff",
     fontWeight: "600",
     fontSize: 16,
+  },
+    redirectText: {
+    color: "#2488ca",
+    fontWeight: "600",
+    textAlign:"center",
+    paddingTop:10
   },
 });

@@ -74,8 +74,11 @@ export default function Home() {
       });
     } catch (err: any) {
       Alert.alert("Error", err.response?.data?.error || "Failed to join game");
-    }
+      setManualId("");
+    }finally{
+    setManualId("");
   };
+  }
 
   useFocusEffect(
     useCallback(() => {
@@ -148,6 +151,7 @@ export default function Home() {
             placeholder="Paste game invite code"
             value={manualId}
             onChangeText={setManualId}
+            placeholderTextColor="#000"
             style={styles.input}
           />
 
@@ -164,6 +168,7 @@ export default function Home() {
 
               <TextInput
                 placeholder="Enter Room Name"
+                placeholderTextColor="#000"
                 value={gameName}
                 onChangeText={setGameName}
                 style={styles.input}
@@ -247,8 +252,11 @@ const styles = StyleSheet.create({
   gameItem: {
     padding: 14,
     borderRadius: 12,
-    backgroundColor: "#f4f6f8",
+    borderWidth:1,
+    backgroundColor: "#d0d0d0",
     marginBottom: 12,
+    borderColor:"#000",
+    elevation:4
   },
 
   gameRow: {
@@ -287,6 +295,7 @@ const styles = StyleSheet.create({
     padding: 14,
     backgroundColor: "#ffffff",
     fontSize: 15,
+    color: "#000",
   },
 
   primaryButton: {

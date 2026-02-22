@@ -4,7 +4,7 @@ import { useAuth } from "../context/AuthContext";
 export default function Index() {
   const { user } = useAuth();
 
-  if (!user) return <Redirect href="/register" />;
+  if (!user) return <Redirect href="/login" />;
 
   return <Redirect href={"/(tabs)/" as any} />;
 }

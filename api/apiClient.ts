@@ -15,10 +15,10 @@ const API_BASE_URL_Dev = "http://10.0.2.2:3000";
 
 
 
-console.log("🔵 API Client initialized with URL:", API_BASE_URL_Prod);
+console.log("🔵 API Client initialized with URL:", API_BASE_URL_Dev);
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL_Prod,
+  baseURL: API_BASE_URL_Dev,
   timeout: 10000, // 10 second timeout
 });
 

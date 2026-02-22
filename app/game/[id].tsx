@@ -5,6 +5,7 @@ import {
   StyleSheet,
   Alert,
   ActivityIndicator,
+  Pressable,
 } from "react-native";
 import { router, useLocalSearchParams } from "expo-router";
 import { SafeAreaView } from "react-native-safe-area-context";
@@ -24,6 +25,7 @@ import LobbyHeader from "../components/game/LobbyHeader";
 import ScoreBoard from "../components/game/ScoreBoard";
 import ChooserView from "../components/game/ChooserView";
 import PlayerView from "../components/game/PlayerView";
+import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
 type WordItem = {
   word: string;
@@ -212,13 +214,23 @@ export default function Game() {
     );
   };
 
-  const handleSentenceResult = (data: any) => {
-    if (data.user_id !== user?.user_id) return;
+  const handleSentenceResult = (data: Sentence) => {
+    // Update sentences list
+    setSentences((prev) =>
+      prev.map((s) =>
+        s.user_id === data.user_id
+          ? { ...s, approved: data.approved, points: data.points }
+          : s,
+      ),
+    );
 
-    setMyStatus({
-      approved: data.approved,
-      points: data.points,
-    });
+    // If it's me, also update myStatus
+    if (data.user_id === user?.user_id) {
+      setMyStatus({
+        approved: data.approved,
+        points: data.points,
+      });
+    }
   };
 
   const handleWordSelected = (word: WordItem) => {
@@ -344,9 +356,16 @@ export default function Game() {
             submitSentence={submitSentence}
             submitting={submitting}
             myStatus={myStatus}
+            sentences={sentences}
           />
         )}
       </View>
+
+      {/* <View style={{flexDirection: "row", justifyContent: "flex-end", padding:20 }}>
+        <Pressable style={styles.chat}>
+          <FontAwesome6 name="message" size={27} color="white" />
+        </Pressable>
+      </View> */}
 
       {/* Bottom Section */}
       <View style={styles.footer}>
@@ -381,7 +400,13 @@ const styles = StyleSheet.create({
   },
 
   footer: {
-    marginTop: "auto",
+    marginTop: 20,
     paddingBottom: 10,
+  },
+  chat: {
+    backgroundColor: "#385541c5",
+    padding: 20,
+    borderRadius: 50,
+    borderWidth: 1,
   },
 });
