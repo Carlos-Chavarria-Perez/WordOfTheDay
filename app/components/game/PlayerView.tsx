@@ -7,6 +7,7 @@ import {
   StyleSheet,
   Pressable,
   FlatList,
+  ScrollView,
 } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import { Sentence } from "@/types/game";
@@ -70,166 +71,176 @@ export default function PlayerView({
   };
 
   return (
-    <>
-      <View style={{ flex: 1 }}>
-        {/* 🔹 Word Display */}
-        <View style={styles.card}>
-          <View style={styles.toogleHeader}>
-            <View style={styles.side}>
-              {!showSubmission && (
-                <Text style={{ fontWeight: "bold" }}>Stauts</Text>
-              )}
-            </View>
-            <View style={styles.submittionStatus}>
-              {!showSubmission && <Text style={statusStyle}>{statusText}</Text>}
-            </View>
-            <View style={styles.side}>
-              <Pressable onPress={() => setShowSubmission(!showSubmission)}>
-                <FontAwesome6
-                  name={showSubmission ? "chevron-down" : "chevron-up"}
-                  size={18}
-                />
-              </Pressable>
-            </View>
+    <ScrollView
+      style={{ flex: 1 }}
+      contentContainerStyle={{ paddingBottom: 20 }}
+      showsVerticalScrollIndicator={false}
+    >
+      {/* 🔹 Word Display */}
+      <View style={styles.card}>
+        <View style={styles.toogleHeader}>
+          <View style={styles.side}>
+            {!showSubmission && (
+              <Text style={{ fontWeight: "bold" }}>Stauts</Text>
+            )}
           </View>
-
-          {showSubmission && (
-            <>
-              <Text style={styles.wordTitle}>Word: {selectedWord.word}</Text>
-              {selectedWord.definition && (
-                <Text style={styles.definition}>{selectedWord.definition}</Text>
-              )}
-              {/* 🔹 Submission Form */}
-              {!myStatus && (
-                <>
-                  <TextInput
-                    style={styles.input}
-                    placeholder="Type in your sentence"
-                    value={sentence}
-                    onChangeText={setSentence}
-                    multiline
-                  />
-
-                  <Button
-                    title={submitting ? "Submitting..." : "Submit Sentence"}
-                    onPress={submitSentence}
-                    disabled={submitting}
-                  />
-                </>
-              )}
-
-              {/* 🟡 Waiting Approval */}
-              {myStatus?.approved === null && (
-                <Text style={styles.waitingText}>Waiting for approval...</Text>
-              )}
-
-              {/* 🟢 Approved */}
-              {myStatus?.approved === true && (
-                <View style={[styles.resultCard, styles.approved]}>
-                  <FontAwesome6 name="check-circle" size={26} color="green" />
-                  <Text style={styles.resultText}>
-                    Approved — Points: {myStatus.points ?? 0}
-                  </Text>
-                </View>
-              )}
-
-              {/* 🔴 Rejected */}
-              {myStatus?.approved === false && (
-                <View style={[styles.resultCard, styles.rejected]}>
-                  <FontAwesome6 name="times-circle" size={26} color="red" />
-                  <Text style={styles.resultText}>Rejected</Text>
-                </View>
-              )}
-            </>
-          )}
+          <View style={styles.submittionStatus}>
+            {!showSubmission && <Text style={statusStyle}>{statusText}</Text>}
+          </View>
+          <View style={styles.side}>
+            <Pressable onPress={() => setShowSubmission(!showSubmission)}>
+              <FontAwesome6
+                name={showSubmission ? "chevron-down" : "chevron-up"}
+                size={18}
+              />
+            </Pressable>
+          </View>
         </View>
 
-        <View style={[styles.card, { flex: 1 }]}>
-          <View style={{ paddingBottom: 10 }}>
-            <Text style={styles.playerSubmitions}>Submitted Senteces</Text>
-          </View>
-          <FlatList
-            style={{ flex: 1 }}
-            contentContainerStyle={{ paddingBottom: 10 }}
-            data={sentences}
-            keyExtractor={(item) => item.id}
-            renderItem={({ item }) => (
-              <View>
-                <View style={styles.sentenceItem}>
-                  <View style={styles.sentenceRow}>
-                    <Text style={styles.sentenceOwner}>{item.username}</Text>
-                    {item.approved === null && (
-                      <Text style={styles.waitingTextSubmitted}>
-                        Waiting approval
-                      </Text>
-                    )}
-                    {item.approved !== null && (
-                      <Text
-                        style={
-                          item.approved
-                            ? styles.approvedStatus
-                            : styles.rejectedStatus
-                        }
-                      >
-                        {item.approved
-                          ? `Approved — ${item.points ?? 0} pts`
-                          : "Rejected"}
-                      </Text>
-                    )}
-                  </View>
+        {showSubmission && (
+          <>
+            <Text style={styles.wordTitle}>Word: {selectedWord.word}</Text>
+            {selectedWord.definition && (
+              <Text style={styles.definition}>{selectedWord.definition}</Text>
+            )}
+            {/* 🔹 Submission Form */}
+            {!myStatus && (
+              <>
+                <TextInput
+                  style={styles.input}
+                  placeholder="Type in your sentence"
+                  value={sentence}
+                  onChangeText={setSentence}
+                  multiline
+                />
 
-                  <View style={styles.sentenceContainer}>
-                    <Text
-                      numberOfLines={
-                        overflowItems[item.id]
-                          ? expandedItems[item.id]
-                            ? undefined
-                            : 2
-                          : undefined
-                      }
-                      onTextLayout={(e) => {
-                        if (overflowItems[item.id] !== undefined) return;
+                <Button
+                  title={submitting ? "Submitting..." : "Submit Sentence"}
+                  onPress={submitSentence}
+                  disabled={submitting}
+                />
+              </>
+            )}
 
-                        const fullLineCount = e.nativeEvent.lines.length;
+            {/* 🟡 Waiting Approval */}
+            {myStatus?.approved === null && (
+              <Text style={styles.waitingText}>Waiting for approval...</Text>
+            )}
 
-                        if (fullLineCount > 2) {
-                          setOverflowItems((prev) => ({
-                            ...prev,
-                            [item.id]: true,
-                          }));
-                        } else {
-                          setOverflowItems((prev) => ({
-                            ...prev,
-                            [item.id]: false,
-                          }));
-                        }
-                      }}
-                    >
-                      {item.sentence}
-                    </Text>
-                  </View>
-                  <View style={styles.toogleExpand}>
-                    {overflowItems[item.id] && (
-                      <Pressable
-                        style={({ pressed }) => [
-                          styles.toggleButton,
-                          pressed && { opacity: 0.7 },
-                        ]}
-                        onPress={() => toogleExpand(item.id)}
-                      >
-                        <Text style={styles.toggleButtonText}>
-                          {expandedItems[item.id] ? "Show less" : "Show more"}
-                        </Text>
-                      </Pressable>
-                    )}
-                  </View>
-                </View>
+            {/* 🟢 Approved */}
+            {myStatus?.approved === true && (
+              <View style={[styles.resultCard, styles.approved]}>
+                <FontAwesome6 name="check-circle" size={26} color="green" />
+                <Text style={styles.resultText}>
+                  Approved — Points: {myStatus.points ?? 0}
+                </Text>
               </View>
             )}
-          />
-        </View>
+
+            {/* 🔴 Rejected */}
+            {myStatus?.approved === false && (
+              <View style={[styles.resultCard, styles.rejected]}>
+                <FontAwesome6 name="times-circle" size={26} color="red" />
+                <Text style={styles.resultText}>Rejected</Text>
+              </View>
+            )}
+          </>
+        )}
       </View>
-    </>
+
+      <View style={[styles.card, { flex: 1 }]}>
+        <View style={{ paddingBottom: 10 }}>
+          <Text style={styles.playerSubmitions}>Submitted Senteces</Text>
+        </View>
+        <FlatList
+          scrollEnabled={false}
+          style={{ flex: 1 }}
+          contentContainerStyle={{ paddingBottom: 10 }}
+          data={sentences}
+          keyExtractor={(item) => item.id}
+          renderItem={({ item }) => (
+            <View>
+              <View style={styles.sentenceItem}>
+                <View style={styles.sentenceRow}>
+                  <Text style={styles.sentenceOwner}>{item.username}</Text>
+                  {item.approved === null && (
+                    <Text style={styles.waitingTextSubmitted}>
+                      Waiting approval
+                    </Text>
+                  )}
+                  {item.approved !== null && (
+                    <Text
+                      style={
+                        item.approved
+                          ? styles.approvedStatus
+                          : styles.rejectedStatus
+                      }
+                    >
+                      {item.approved
+                        ? `Approved — ${item.points ?? 0} pts`
+                        : "Rejected"}
+                    </Text>
+                  )}
+                </View>
+
+                <View style={styles.sentenceContainer}>
+                  <Text
+                    numberOfLines={
+                      overflowItems[item.id]
+                        ? expandedItems[item.id]
+                          ? undefined
+                          : 2
+                        : undefined
+                    }
+                    onTextLayout={(e) => {
+                      if (overflowItems[item.id] !== undefined) return;
+
+                      const fullLineCount = e.nativeEvent.lines.length;
+
+                      if (fullLineCount > 2) {
+                        setOverflowItems((prev) => ({
+                          ...prev,
+                          [item.id]: true,
+                        }));
+                      } else {
+                        setOverflowItems((prev) => ({
+                          ...prev,
+                          [item.id]: false,
+                        }));
+                      }
+                    }}
+                  >
+                    {item.sentence}
+                  </Text>
+                  <View style={styles.feedbackcontainer}>
+                    {item.review_comment && (
+                      <Text style={styles.feedbacktext}>
+                        {item.review_comment}
+                      </Text>
+                    )}
+                  </View>
+                </View>
+                <View style={styles.toogleExpand}>
+                  {overflowItems[item.id] && (
+                    <Pressable
+                      style={({ pressed }) => [
+                        styles.toggleButton,
+                        pressed && { opacity: 0.7 },
+                      ]}
+                      onPress={() => toogleExpand(item.id)}
+                    >
+                      <Text style={styles.toggleButtonText}>
+                        {expandedItems[item.id] ? "Show less" : "Show more"}
+                      </Text>
+                    </Pressable>
+                  )}
+                </View>
+              </View>
+            </View>
+          )}
+        />
+      </View>
+    </ScrollView>
   );
 }
 
@@ -385,12 +396,21 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
   approvedStatus: {
-  color: "#00a116",
-  fontWeight: "bold",
-},
+    color: "#00a116",
+    fontWeight: "bold",
+  },
 
-rejectedStatus: {
-  color: "#ec0000",
-  fontWeight: "bold",
-},
+  rejectedStatus: {
+    color: "#ec0000",
+    fontWeight: "bold",
+  },
+  feedbackcontainer: { marginTop: 8, alignSelf: "flex-start" },
+  feedbacktext: {
+    borderTopWidth: 1,
+    borderColor: "#241e1e",
+    paddingTop: 6,
+    paddingHorizontal: 4,
+    alignSelf: "flex-start",
+    fontWeight:"bold"
+  },
 });

@@ -38,10 +38,7 @@ export default function Login() {
         },
         res.token,
       );
-
-      Alert.alert("Success", res.message, [
-        { text: "OK", onPress: () => router.replace("/(tabs)") },
-      ]);
+      router.replace("/(tabs)");
     } catch (error: any) {
       const errorMsg =
         error.response?.data?.error || error.message || "Unknown error";
@@ -84,8 +81,10 @@ export default function Login() {
             <Text style={styles.primaryButtonText}>Login</Text>
           </Pressable>
         )}
-        <Pressable onPress={() => router.replace("/login")}>
-          <Text style={styles.redirectText}>Dont' have an account? Register</Text>
+        <Pressable onPress={() => router.replace("/register")}>
+          <Text style={styles.redirectText}>
+            Dont' have an account? Register
+          </Text>
         </Pressable>
       </View>
     </SafeAreaView>
@@ -148,10 +147,10 @@ const styles = StyleSheet.create({
     fontWeight: "600",
     fontSize: 16,
   },
-    redirectText: {
+  redirectText: {
     color: "#2488ca",
     fontWeight: "600",
-    textAlign:"center",
-    paddingTop:10
+    textAlign: "center",
+    paddingTop: 10,
   },
 });

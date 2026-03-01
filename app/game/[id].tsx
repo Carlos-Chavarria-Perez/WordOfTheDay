@@ -18,7 +18,7 @@ import {
 } from "../../api/sentences";
 import { useEffect, useState } from "react";
 import { useAuth } from "@/context/AuthContext";
-import { LeaderboardItem } from "@/types/game";
+import { LeaderboardItem,Sentence,WordItem } from "@/types/game";
 import * as Clipboard from "expo-clipboard";
 import { connectSocket, getSocket } from "../../api/socket";
 import LobbyHeader from "../components/game/LobbyHeader";
@@ -27,19 +27,6 @@ import ChooserView from "../components/game/ChooserView";
 import PlayerView from "../components/game/PlayerView";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 
-type WordItem = {
-  word: string;
-  definition: string;
-};
-
-type Sentence = {
-  id: string;
-  user_id: string;
-  sentence: string;
-  approved: boolean | null;
-  username?: string;
-  points?: number;
-};
 
 export default function Game() {
   const { id } = useLocalSearchParams<{ id: string }>();
@@ -176,6 +163,7 @@ export default function Game() {
     sentence_owner_id: string,
     approved: boolean,
     points: number,
+    review_comment?:string
   ) => {
     try {
       await reviewSentenceApi(
@@ -183,6 +171,7 @@ export default function Game() {
         sentence_owner_id,
         approved,
         Number(points || 0),
+        review_comment
       );
     } catch (err) {
       console.log(err);
@@ -219,7 +208,7 @@ export default function Game() {
     setSentences((prev) =>
       prev.map((s) =>
         s.user_id === data.user_id
-          ? { ...s, approved: data.approved, points: data.points }
+          ? { ...s, approved: data.approved, points: data.points, review_comment: data.review_comment,}
           : s,
       ),
     );

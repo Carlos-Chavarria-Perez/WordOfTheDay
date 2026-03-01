@@ -13,18 +13,15 @@ export const injectTokenGetter = (fn: () => string | null) => {
 const API_BASE_URL_Prod = "https://wordofthedaybackend.onrender.com";
 const API_BASE_URL_Dev = "http://10.0.2.2:3000";
 
-
-
-console.log("🔵 API Client initialized with URL:", API_BASE_URL_Dev);
+// console.log("🔵 API Client initialized with URL:", API_BASE_URL_Dev);
 
 const apiClient = axios.create({
-  baseURL: API_BASE_URL_Dev,
+  baseURL: API_BASE_URL_Prod,
   timeout: 10000, // 10 second timeout
 });
 
 // attach token
 apiClient.interceptors.request.use((config) => {
-  console.log("🔵 API Request:", config.method?.toUpperCase(), config.url);
   const token = getToken?.();
   if (token) {
     config.headers.Authorization = `Bearer ${token}`;
@@ -35,11 +32,9 @@ apiClient.interceptors.request.use((config) => {
 // handle expired session
 apiClient.interceptors.response.use(
   (response) => {
-    console.log("✅ API Response:", response.status, response.data);
     return response;
   },
   (error) => {
-    console.log("❌ API Error:", error.message);
     if (error.response?.status === 401) {
       error.response?.status === 401 &&
         error.response?.data?.error === "Session Expired";

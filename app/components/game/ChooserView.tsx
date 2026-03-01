@@ -11,12 +11,13 @@ import {
 } from "react-native";
 import FontAwesome6 from "@expo/vector-icons/FontAwesome6";
 import MaterialCommunityIcons from "@expo/vector-icons/MaterialCommunityIcons";
+import { Sentence } from "@/types/game";
 
 type Props = {
   words: any[];
   selectedWord: any;
   loadingWords: boolean;
-  sentences: any[];
+  sentences: Sentence[];
   pointsMap: Record<string, string>;
   setPointsMap: React.Dispatch<React.SetStateAction<Record<string, string>>>;
   chooseWord: (item: any) => void;
@@ -25,6 +26,7 @@ type Props = {
     sentence_owner_id: string,
     approved: boolean,
     points: number,
+    comment?: string,
   ) => void;
   requestWords: () => void;
   nextRound: () => void;
@@ -44,6 +46,9 @@ export default function ChooserView({
   nextRound,
   gameId,
 }: Props) {
+  const [commentMap, setCommentMap] = React.useState<Record<string, string>>(
+    {},
+  );
   // 🟢 WORD SELECTION STATE
   if (!selectedWord) {
     return (
@@ -108,66 +113,121 @@ export default function ChooserView({
       <FlatList
         data={sentences}
         keyExtractor={(item) => item.id}
-        renderItem={({ item }) => (
-          <View style={styles.card}>
-            <View style={styles.submitterContainer}>
-              <Text style={{ fontSize: 18 }}>Submitted by: </Text>
-              <Text style={{ fontSize: 18, fontWeight: "bold" }}>
-                {item.username}
-              </Text>
-            </View>
-            <View style={styles.sentenceContainer}>
-              <Text style={{textAlign:"center", fontSize:20}}>{item.sentence}</Text>
-            </View>
+        renderItem={({ item }) => {
+          const pointsValue = Number(pointsMap[item.id] || 0);
 
-            {item.approved === null && (
-              <View style={styles.actionsRow}>
+          const isValidPoints =
+            !!pointsMap[item.id] && !isNaN(pointsValue) && pointsValue > 0;
+
+          return (
+            <View style={styles.card}>
+              <View style={styles.submitterContainer}>
+                <Text style={{ fontSize: 18 }}>Submitted by: </Text>
+                <Text style={{ fontSize: 18, fontWeight: "bold" }}>
+                  {item.username}
+                </Text>
+              </View>
+
+              <View style={styles.sentenceContainer}>
+                <Text style={{ textAlign: "center", fontSize: 20 }}>
+                  {item.sentence}
+                </Text>
+              </View>
+              <View style={styles.feedbackcontainer}>
                 <TextInput
-                  style={styles.pointsInput}
-                  placeholder="Pts"
+                  style={[
+                    styles.feedbackInput,
+                    item.approved !== null && styles.disabledInput,
+                  ]}
+                  placeholder="Leave a Comment"
+                  editable={item.approved === null}
                   placeholderTextColor="#000"
-                  keyboardType="numeric"
-                  value={pointsMap[item.id] || ""}
+                  value={
+                    item.approved === null
+                      ? commentMap[item.id] || ""
+                      : item.review_comment || ""
+                  }
                   onChangeText={(val) =>
-                    setPointsMap((prev) => ({
+                    setCommentMap((prev) => ({
                       ...prev,
                       [item.id]: val,
                     }))
                   }
                 />
-
-                <FontAwesome6
-                  name="check-circle"
-                  size={26}
-                  color="green"
-                  onPress={() =>
-                    reviewSentence(
-                      gameId,
-                      item.user_id,
-                      true,
-                      Number(pointsMap[item.id] || 0),
-                    )
-                  }
-                />
-
-                <FontAwesome6
-                  name="times-circle"
-                  size={26}
-                  color="red"
-                  onPress={() => reviewSentence(gameId, item.user_id, false, 0)}
-                />
               </View>
-            )}
 
-            {item.approved === true && (
-              <Text style={styles.approvedText}>Approved</Text>
-            )}
+              {item.approved === null && (
+                <View style={styles.actionsRow}>
+                  <TextInput
+                    style={styles.pointsInput}
+                    placeholder="Pts"
+                    placeholderTextColor="#000"
+                    keyboardType="numeric"
+                    value={pointsMap[item.id] || ""}
+                    onChangeText={(val) =>
+                      setPointsMap((prev) => ({
+                        ...prev,
+                        [item.id]: val,
+                      }))
+                    }
+                  />
 
-            {item.approved === false && (
-              <Text style={styles.rejectedText}>Rejected</Text>
-            )}
-          </View>
-        )}
+                  <Pressable
+                    disabled={!isValidPoints}
+                    onPress={() =>
+                      reviewSentence(
+                        gameId,
+                        item.user_id,
+                        true,
+                        pointsValue,
+                        commentMap[item.id] || "",
+                      )
+                    }
+                    style={({ pressed }) => ({
+                      opacity: !isValidPoints ? 0.3 : pressed ? 0.6 : 1,
+                    })}
+                  >
+                    <FontAwesome6
+                      name="check-circle"
+                      size={26}
+                      color={isValidPoints ? "green" : "#999"}
+                    />
+                  </Pressable>
+
+                  <FontAwesome6
+                    name="times-circle"
+                    size={26}
+                    color="red"
+                    onPress={() =>
+                      reviewSentence(
+                        gameId,
+                        item.user_id,
+                        false,
+                        0,
+                        commentMap[item.id] || "",
+                      )
+                    }
+                  />
+                </View>
+              )}
+
+              {item.approved === true && (
+                <View style={styles.statusOfSentence}>
+                  <Text style={styles.stautstext}>Status: </Text>
+
+                  <Text style={styles.approvedText}>Approved</Text>
+                </View>
+              )}
+
+              {item.approved === false && (
+                <View style={styles.statusOfSentence}>
+                  <Text style={styles.stautstext}>Status: </Text>
+                  <Text style={styles.rejectedText}>Rejected</Text>
+                </View>
+              )}
+            </View>
+          );
+        }}
       />
     </>
   );
@@ -231,21 +291,31 @@ const styles = StyleSheet.create({
     paddingHorizontal: 10,
     textAlign: "center",
   },
+  feedbackcontainer: {
+    justifyContent: "center",
+  },
+  feedbackInput: {
+    height: 40,
+    borderWidth: 1,
+    borderColor: "#000000",
+    borderRadius: 8,
+    paddingHorizontal: 10,
+  },
+
+  stautstext: { fontSize: 20, fontWeight: "bold" },
 
   approvedText: {
     color: "green",
-    marginTop: 6,
     fontWeight: "600",
-    textAlign:"center",
-    fontSize:20
+    textAlign: "center",
+    fontSize: 20,
   },
-  
+
   rejectedText: {
     color: "red",
-    marginTop: 6,
     fontWeight: "600",
-    textAlign:"center",
-    fontSize:20
+    textAlign: "center",
+    fontSize: 20,
   },
 
   nextRoundBtn: {
@@ -272,9 +342,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
   },
   submitterContainer: { flexDirection: "row", textAlign: "center" },
-  sentenceContainer:{
-    padding:10,
-    
+  sentenceContainer: {
+    padding: 10,
   },
 
   waitingText: {
@@ -283,5 +352,15 @@ const styles = StyleSheet.create({
     fontWeight: "500",
     textAlign: "center",
     color: "#000",
+  },
+  statusOfSentence: {
+    flexDirection: "row",
+    marginTop: 6,
+    textAlign: "center",
+    justifyContent: "center",
+  },
+  disabledInput: {
+    backgroundColor: "#f2f2f2",
+    color: "#555",
   },
 });

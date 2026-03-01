@@ -1,45 +1,6 @@
+import { CreateGameResponse,Game,GameDetailsResponse,JoinGameResponse, LeaderboardPlayer, } from "@/types/game";
 import apiClient from "./apiClient";
-//
-// ================= TYPES =================
-//
 
-export interface Game {
-  id: string;
-  game_name: string;
-  current_round: number;
-  created_at: string;
-}
-
-export interface CreateGameResponse {
-  message: string;
-  game_id: string;
-  invite_code: string;
-}
-
-export interface JoinGameResponse {
-  message: string;
-  game_id: string;
-}
-
-export interface GameDetailsResponse {
-  game_id: string;
-  is_word_chooser: boolean;
-  players: {
-    username: string;
-    points: number;
-  }[];
-}
-
-export interface LeaderboardPlayer {
-  username: string;
-  points: number;
-}
-
-export interface ResetRoundResponse {
-  message: string;
-}
-
-//
 // ================= API =================
 //
 

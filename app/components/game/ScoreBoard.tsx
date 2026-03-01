@@ -15,7 +15,7 @@ type Props = {
 };
 
 export default function ScoreBoard({ scores }: Props) {
-  const [showPlayerScore, setShowPlayerScore] = useState(false);
+  const [showPlayerScore, setShowPlayerScore] = useState(true);
 
   return (
     <View style={styles.container}>

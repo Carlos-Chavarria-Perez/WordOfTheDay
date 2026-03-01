@@ -1,13 +1,5 @@
+import { AuthResponse } from "@/types/game";
 import apiClient from "./apiClient";
-
-export interface AuthResponse {
-  message: string;
-  user: {
-    user_id: string;
-    username: string;
-  };
-  token: string;
-}
 
 export async function registerUser(
   username: string,
